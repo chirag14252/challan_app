@@ -339,11 +339,63 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configuration")
         
-       
+        # Gemini API Key
+        gemini_api_key = os.getenv("GEMINI_API_KEY", "")
+        
+        # Test API Key button
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔍 Test API Key", help="Check if your Gemini API key is working"):
+                if gemini_api_key:
+                    with st.spinner("Testing API key..."):
+                        is_working, message = test_gemini_api_key(gemini_api_key)
+                        if is_working:
+                            st.success(message)
+                        else:
+                            st.error(message)
+                else:
+                    st.warning("Please enter your API key first")
+        
+        with col2:
+            if st.button("📋 List Models", help="Show available Gemini models"):
+                if gemini_api_key:
+                    with st.spinner("Fetching models..."):
+                        models = list_available_models(gemini_api_key)
+                        if models:
+                            st.success(f"Found {len(models)} models:")
+                            for model in models[:5]:  # Show first 5
+                                st.write(f"• {model}")
+                        else:
+                            st.error("No models found or API error")
+                else:
+                    st.warning("Please enter your API key first")
+        
+        # Model selection
+        model_option = st.selectbox(
+            "Gemini Model",
+            ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro", "gemini-1.5-pro-latest"],
+            help="Select the Gemini model to use for image analysis. Try 'gemini-1.5-flash' first (fastest and most reliable)."
+        )
+        
+        # Google Apps Script URL
+        script_url = st.text_input(
+            "Google Apps Script URL",
+            value=os.getenv("GOOGLE_APPS_SCRIPT_URL", ""),
+            help="Deploy your Apps Script as a web app and paste the URL here"
+        )
+        
+        # Secret key for Apps Script (matches your script)
+        secret_key = st.text_input(
+            "Secret Key",
+            value="abc123",
+            help="Must match the secret key in your Apps Script (currently: abc123)"
+        )
         
         st.markdown("---")
         st.markdown("### 📋 Instructions")
         st.markdown("""
+        1. Enter your Gemini API key
+        2. Enter your Google Apps Script URL
         3. Upload a challan image
         4. Click 'Analyze with Gemini AI'
         5. Review extracted data
@@ -409,6 +461,13 @@ def main():
             - Exact payload being sent
             """)
         
+        
+        st.markdown("---")
+        st.markdown("### 🔗 Quick Links")
+        st.markdown("- [Gemini API Keys](https://aistudio.google.com/app/apikey)")
+        st.markdown("- [Gemini AI Studio](https://aistudio.google.com/)")
+        st.markdown("- [Google Apps Script](https://script.google.com/)")
+
     # Main content
     col1, col2 = st.columns([1, 1])
     
